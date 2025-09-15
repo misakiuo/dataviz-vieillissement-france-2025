@@ -1,0 +1,353 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>La France face au vieillissement</title>
+  <link href="https://fonts.googleapis.com/css2?family=Calibri&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
+  <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2"></script>
+  <script type="text/javascript" src="pop2018.json"></script>
+  <script type="text/javascript" src="limite_reg.json"></script>
+  <script src="https://public.flourish.studio/resources/embed.js"></script>
+
+  <style>
+    body {
+      font-family: 'Calibri', sans-serif;
+      margin: 0;
+      padding: 0;
+      background-color: #fff5f5;
+      color: #333;
+    }
+    .logo { height: 100px; margin-right: 1rem; }
+    header {
+      background: linear-gradient(to right, #ec407a, #f5b7b1);
+      color: white;
+      padding: 2rem;
+      text-align: center;
+    }
+    section {
+  text-align: justify;
+  line-height: 1.6;
+	}
+	
+	nav {
+      display: flex;
+      justify-content: center;
+      background-color: #ffe0e0;
+      padding: 1rem 0;
+      position: sticky;
+      top: 0;
+      z-index: 1000;
+    }
+    nav a {
+      margin: 0 1rem;
+      text-decoration: none;
+      color: #b71c1c;
+      font-weight: bold;
+    }
+    nav a:hover { color: #ff5722; }
+    section {
+      padding: 2rem;
+      max-width: 1000px;
+      margin: auto;
+    }
+    h2 {
+      color: #e91e63;
+      border-bottom: 2px solid #ffcdd2;
+      padding-bottom: 0.5rem;
+    }
+    h3 {
+      position: relative;
+      padding: 5px 5px 5px 42px;
+      background: #ffaf58;
+      font-size: 20px;
+      color: #fff;
+      margin-left: -33px;
+    }
+    h3::before {
+      content: '';
+      position: absolute;
+      left: -2px;
+      top: -2px;
+      border-left: solid 40px #fff;
+      border-bottom: solid 79px transparent;
+    }
+    footer {
+      text-align: center;
+      padding: 1rem;
+      background-color: #ffe0e0;
+      color: #777;
+    }
+    .box {
+      border: 2px solid #eb984e;
+      border-radius: 10px;
+      background-color: #fdf2e9;
+      padding: 2em;
+    }
+    #map {
+      width: 100%;
+      height: 80vh;
+      margin-bottom: 2rem;
+    }
+    #chart-container {
+      width: 100%;
+      max-width: 600px;
+      margin: auto;
+    }
+    canvas { max-width: 100%; }
+    .info-box {
+      padding: 8px;
+      background-color: rgba(255, 255, 255, 0.9);
+      border-radius: 5px;
+      font-size: 14px;
+      box-shadow: 0 0 5px rgba(0,0,0,0.2);
+    }
+    .legend {
+      line-height: 18px;
+      background: white;
+      padding: 6px 8px;
+      font-size: 13px;
+      border-radius: 5px;
+    }
+    .legend i {
+      width: 18px;
+      height: 18px;
+      float: left;
+      margin-right: 8px;
+      opacity: 0.7;
+    }
+	
+	.flourish-embed {
+	max-width: 700px !important;
+	margin: auto;
+	}
+	
+	#carte-et-graphique {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 2rem;
+    justify-content: center;
+    align-items: flex-start;
+    margin-bottom: 2rem;
+  }
+
+  #map {
+    flex: 1 1 60%;
+    height: 80vh;
+    min-width: 300px;
+  }
+
+  #chart-container {
+    flex: 1 1 35%;
+    min-width: 280px;
+    max-width: 500px;
+  }
+
+  #maintitle {
+    background-color: #f0f0f0;
+    padding: 1rem;
+    margin: 2rem auto;
+    max-width: 1000px;
+    border-left: 4px solid #e91e63;
+  }
+
+  #maintitle a {
+    color: #b71c1c;
+    font-weight: bold;
+    text-decoration: underline;
+  }
+
+  #maintitle a:hover {
+    color: #ff5722;
+  }
+  </style>
+</head>
+
+<body>
+  <header>
+    <h1>La France métropolitaine face au vieillissement</h1>
+    <img src="1top.png" alt="logo" class="logo"> 
+  </header>
+  <nav>
+    <a href="#partie1">Introduction et enjeux</a>
+    <a href="#partie2">Carte en 2018</a>
+    <a href="#partie3">Nouveaux défis</a>
+    <a href="#partie4">Société à venir</a>
+  </nav>
+
+  <section id="partie1">
+    <h2>1. Le vieillissement de la population et ses enjeux</h2>
+	<p> Phénomène mondial, le vieillissement de la population touche aussi bien des pays développés que des pays émergents dans le monde entier. En France, le part de la population âgée est à 21.75% en 2023 avec un 12<sup>e</sup> rang au niveau mondial. Ce phénomène est aujourd'hui sans aucun doute non-négligeable en Europe et en France. </p>
+	<br>
+	<center><p><font color ="#eb984e"> Évolution de la population de 1970 à 2070 (scénario central) (Source:INSEE,2021)</font></p>
+	<img src="https://www.insee.fr/fr/statistiques/graphique/5893969/figure1.png" width="70%" alt="chart visualization"></center><br>
+	<br>
+	
+	<div class="box"><b>Définition du "vieillissement démographique"</b><br><small>C'est un processus qui découle mécaniquement de la transition démographique, c’est-à-dire de la convergence de la mortalité et de la natalité vers des taux faibles (Doignon, 2020). <br>
+	La population âgée désigne la proportion de personnes âgées de 65 ans ou plus dans la population totale. L'Organisation mondiale de la Santé (OMS) et les Nations Unies définissent un « aging society » comme une société dont plus de 7 % de la population a 65 ans ou plus, un « aged society » comme une société dont plus de 14 % de la population a 65 ans ou plus, et un « super-aged society » comme une société dont plus de 21 % de la population a 65 ans ou plus.</small></div>
+	<br>
+	
+	<p>Les enjeux importants autour du vieillissement sont diversifiés : le problème de l’isolement, les distributions des ressources, personnels et matériels, les dépenses publiques. En effet, certains pays tels que le Japon, "super-aged socity" depuis 10 ans avec un taux de population âgée 29.56% (2023), confrontent les défis des systèmes de retraites et financement sanitaire et de la distribution de la population active de manière critique. </p> <br>
+	<p>Ainsi, observer géographiquement le vieillissement est crucial, car cela nous permet de corriger l'inégalité spatiale et sociale et de réaliser une société solidaire et équitable. Nous constatons la répartition inégale de la population en termes de densité, mais aussi de tronçon d'age sur les territoires français. Ce site propose une lecture géographique et prospective du phénomène.</p>
+	
+  </section>
+  
+	<section id="partie2">
+  <h2>2. La part des 65 ans ou plus par département en 2018</h2>
+
+  <p id="maintitle">
+    <strong> Astuce : Cliquez sur un département et découvrez la répartition de la population par âge à côté de la carte !</strong><br>
+    <small>
+      Les points d'information locaux dédiés aux personnes âgées à Strasbourg sont localisés.<br>
+      Si vous cherchez pour les autres régions, cliquez
+      <a href="https://www.pour-les-personnes-agees.gouv.fr/acces-annuaires?annuaire=RESIDENCES_AUTONOMIE#je-recherche-par-annuaire" target="_blank">ici</a>.
+      Si vous cherchez les Ephads, consultez
+      <a href="https://www.pour-les-personnes-agees.gouv.fr/departements/ehpad" target="_blank">ici</a>.
+    </small>
+  </p>
+
+  <div id="carte-et-graphique">
+    <div id="map"></div>
+    <div id="chart-container">
+      <canvas id="pieChart"></canvas>
+    </div>
+  </div>
+
+  <p>
+    La carte ci-desus montre la répartition des personnes âgées de 65 ans et plus en France métropolitaine. Les écarts régionaux sont significatifs. La population est jeune au Nord, au Nord‑Ouest et dans une partie du Sud‑Est du pays, ainsi que dans les départements qui contiennent une métropole. La population est en revanche plus âgée sur la diagonale des faibles densités, notamment dans les départements sans grande agglomération, ainsi que sur une grande partie du littoral.
+  </p>
+</section>
+
+  <section id="partie3">
+    <h2>3. Mettre en relief les nouveaux défis</h2>
+    <p>Le vieillissement est une des causes principales qui crént des déséquilibres démographiques marqués. Face à cette situation, nous rencontrons des nouveaux défits. Deux exemples des enjeux majours constatés sont montrés ci-dessous.</p>
+	
+	<h3>(1) Une forte augumentation de nombre et dépenses d’aides sociales aux personnes âgées</h3>
+	<div style="max-width: 700px; margin: 2rem auto;">
+  <div class="flourish-embed flourish-chart" data-src="visualisation/22503478"></div>
+</div>
+	
+	
+	<h3>(2) Une nette augumentation du taux d’activité des seniors</h3>
+	<center><p><font color ="#eb984e">Taux d'activité et d'emploi des seniors de 1975 à 2023 (Source : INSEE, 2024)</font></p>
+	<img src="2graphe.jpeg" width="60%" alt="chart visualization"><br>
+	
+	<p>Pourtant, elle reste très hétérogène en fonction de l’âge...</p>
+	<div class="flourish-embed flourish-chart" data-src="visualisation/22571080"><script src="https://public.flourish.studio/resources/embed.js"></script><noscript><img src="https://public.flourish.studio/visualisation/22571080/thumbnail" width="70%" alt="chart visualization" /></noscript></div>
+
+  </section>
+
+  <section id="partie4">
+    <h2>4. Ce qui nous attend d’ici 2070 ?</h2>
+    <p>D’ici 2070, la population augmenterait moins vite ou continuerait de diminuer dans toutes les régions de France métropolitaine. La population vieillirait sensiblement sur tous les territoires : dans 62 départements, plus de 30 % des habitants seraient âgés de 65 ans ou plus en 2070 alors qu’aucun département n’est dans cette situation en 2018. Ainsi, le nombre de seniors dépendants sera de plus en plus important. De ce fait, la dépense publique d'aides aux personnes âgées ainsi que les besoins matérielles et du personel augumenteront de manière significative.</p>
+  
+	<br> <p> <font color ="#eb984e">Pyramides des âges – Projections de population par région et département 2018 - 2070 : allez au page INSEE d'
+	<a href="https://www.insee.fr/fr/outil-interactif/6798992/pyramide.htm#!y=2018&v=2&c=0" target="_blank">ici</a>. </font></p><br> 
+ 
+    <div style="text-align:center; margin-top:1rem;">
+     <img src="infographie.png" alt="Infographie vieillissement" style="max-width:100%; height:auto;"><br>
+
+	<div class="flourish-embed flourish-chart" data-src="visualisation/22549072"><script src="https://public.flourish.studio/resources/embed.js"></script><noscript><img src="https://public.flourish.studio/visualisation/22549072/thumbnail" width="70%" alt="chart visualization" /></noscript></div>
+	  
+	
+	<p align="left"> Nous avons bien affirmé les enjeux et défits socio-économiques, démographiques et territoriales du vieillissement de la population en France métropolitainne. Non seulement dans l'Hexagone, les situations sont à la fois critiques dans les territoires d'outre-mer. La Guadeloupe et la Martinique sont de loin les deux départements où on trouve le plus de supercentenaires (plus de 110 ans) par rapport à leur population : huit fois plus que dans l'Hexagone (Vallin, 2021, cité par Meslé et Camarda, 2024).<br><br>
+	Comment mieux prendre en compte et identifier les souhaits réels des futures personnes âgées ?  Comment adapter l’offre de structures à leurs besoins et garantir un éventail de choix ? Comment lutter contre les disparités entre les territoires ? </p>
+	
+	 <div class="box"><b>"Nous sommes un pays où la vie est prise en charge : la petite enfance, l’éducation, la garantie avec l’assurance chômage ou la retraite. Nous sommes le seul pays au monde à avoir fait cela. Nous avons fait le choix du ‘Tous pour un’"</b> <br>François Bayrou, Haut-commissaire au Plan</div>
+	<br>
+    </div>
+  </section>
+
+  <footer>
+    <p>&copy; 2025 dataviz — Vieillissement en France métropolitaine  — Misaki UOZUMI  — M1OTG </p>
+  </footer>
+
+  <!-- Script Leaflet & Chart intégré -->
+  <script>
+    const mymap = L.map('map').fitBounds([[41.3, -5.5], [51.2, 9.7]]);;
+	mymap.setZoom(mymap.getZoom() + 0.6);
+    const baseLayers = {
+      "OSM Classique": L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(mymap),
+      "Clair (CartoDB)": L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png'),
+      "Foncé (CartoDB)": L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png')
+    };
+    L.control.layers(baseLayers).addTo(mymap);
+
+    const markers = [
+      [48.584614, 7.750712, "Point d'information – Strasbourg centre"],
+      [48.573405, 7.752111, "Maison des Aînés"],
+      [48.560833, 7.763056, "Résidence seniors – Neudorf"],
+      [48.602800, 7.766900, "EHPAD – Robertsau"]
+    ];
+    markers.forEach(m => L.marker([m[0], m[1]]).bindPopup(m[2]).addTo(mymap));
+
+    function getColor(v) {
+      return v > 26.0 ? '#ff0000' : v > 23.2 ? '#ff4040' : v > 20.4 ? '#ff8080' : v > 16.9 ? '#ffbfbf' : '#ffffff';
+    }
+    function style(f) {
+      return {
+        fillColor: getColor(f.properties.pop64),
+        weight: 1,
+        opacity: 1,
+        color: 'gray',
+        fillOpacity: 0.6
+      };
+    }
+    const populationLayer = L.geoJSON(pop18, {
+      style,
+      onEachFeature(f, l) {
+        l.bindPopup(`<strong>${f.properties.NOM}</strong>`);
+        l.on('click', () => updateChart(f.properties));
+      }
+    }).addTo(mymap);
+
+    const legend = L.control({ position: 'bottomright' });
+    legend.onAdd = function () {
+      const div = L.DomUtil.create('div', 'legend');
+      const grades = [0, 16.9, 20.4, 23.2, 26.0];
+      const colors = ['#ffffff', '#ffbfbf', '#ff8080', '#ff4040', '#ff0000'];
+      div.innerHTML = '<strong>% +65 ans</strong><br>';
+      grades.forEach((g, i) => {
+        div.innerHTML += `<i style="background:${colors[i]}"></i> ${g}${grades[i + 1] ? ' – ' + grades[i + 1] + '<br>' : '+'}`;
+      });
+      return div;
+    };
+    legend.addTo(mymap);
+
+    const ctx = document.getElementById('pieChart').getContext('2d');
+    const pieChart = new Chart(ctx, {
+      type: 'pie',
+      data: {
+        labels: ['- 25 ans', '25-64 ans', '65 ans -'],
+        datasets: [{
+          data: [0, 0, 0],
+          backgroundColor: ['#ffc0cb', '#ff7f7f', '#ff0000']
+        }]
+      },
+      options: {
+        plugins: {
+          title: {
+            display: true,
+            text: 'Répartition par âge (%)'
+          },
+          legend: { position: 'bottom' },
+          datalabels: {
+            color: '#000',
+            formatter: v => v + ' %',
+            font: { weight: 'bold' }
+          }
+        }
+      },
+      plugins: [ChartDataLabels]
+    });
+
+    function updateChart(props) {
+      pieChart.data.datasets[0].data = [props.pop25, props.pop2564, props.pop64];
+      pieChart.options.plugins.title.text = `Département : ${props.NOM}`;
+      pieChart.update();
+    }
+  </script>
+</body>
+</html>
