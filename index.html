@@ -11,6 +11,7 @@
   <script type="text/javascript" src="pop2018.json"></script>
   <script type="text/javascript" src="limite_reg.json"></script>
   <script src="https://public.flourish.studio/resources/embed.js"></script>
+	<script src="https://cdn.jsdelivr.net/npm/pako@2.1.0/dist/pako.min.js"></script>
 
   <style>
     body {
@@ -264,37 +265,13 @@
     <p>&copy; 2025 dataviz — Vieillissement en France métropolitaine  — Misaki UOZUMI  — M1OTG </p>
   </footer>
 
-  <!-- Script Leaflet & Chart intégré -->
-  <script>
-    const mymap = L.map('map').fitBounds([[41.3, -5.5], [51.2, 9.7]]);;
-	mymap.setZoom(mymap.getZoom() + 0.6);
-    const baseLayers = {
-      "OSM Classique": L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(mymap),
-      "Clair (CartoDB)": L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png'),
-      "Foncé (CartoDB)": L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png')
-    };
-    L.control.layers(baseLayers).addTo(mymap);
+// .gz→ GeoJSON
+fetch("pop2018.json.gz")
+  .then(res => res.arrayBuffer())
+  .then(buffer => {
+    const text = pako.inflate(new Uint8Array(buffer), { to: 'string' });
+    const pop18 = JSON.parse(text);
 
-    const markers = [
-      [48.584614, 7.750712, "Point d'information – Strasbourg centre"],
-      [48.573405, 7.752111, "Maison des Aînés"],
-      [48.560833, 7.763056, "Résidence seniors – Neudorf"],
-      [48.602800, 7.766900, "EHPAD – Robertsau"]
-    ];
-    markers.forEach(m => L.marker([m[0], m[1]]).bindPopup(m[2]).addTo(mymap));
-
-    function getColor(v) {
-      return v > 26.0 ? '#ff0000' : v > 23.2 ? '#ff4040' : v > 20.4 ? '#ff8080' : v > 16.9 ? '#ffbfbf' : '#ffffff';
-    }
-    function style(f) {
-      return {
-        fillColor: getColor(f.properties.pop64),
-        weight: 1,
-        opacity: 1,
-        color: 'gray',
-        fillOpacity: 0.6
-      };
-    }
     const populationLayer = L.geoJSON(pop18, {
       style,
       onEachFeature(f, l) {
@@ -302,6 +279,8 @@
         l.on('click', () => updateChart(f.properties));
       }
     }).addTo(mymap);
+  });
+
 
     const legend = L.control({ position: 'bottomright' });
     legend.onAdd = function () {
@@ -351,3 +330,4 @@
   </script>
 </body>
 </html>
+
